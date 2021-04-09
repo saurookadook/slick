@@ -48,7 +48,8 @@
                 opacity: 1;
             }
         </style>
-        <script src="./04-09-2021_engage-v16.min.js"></script>
+        <script src="./04-09-2021_engage-v16.js"></script>
+        <!-- <script src="./04-09-2021_engage-v16.min.js"></script> -->
     </head>
 
     <body>
@@ -306,10 +307,8 @@
         <script src="./slick/slick.js" type="text/javascript" charset="utf-8"></script>
         <script type="text/javascript">
             var $ = Evergage.cashDom
-            console.log($);
-            /* $(document).on('ready', function () { */
+            // $(document).on('ready', function () {
             Evergage.cashDom(function () {
-                console.log($.slick);
                 $(".vertical-center-4").slick({
                     dots: true,
                     vertical: true,

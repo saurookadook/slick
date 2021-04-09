@@ -290,3 +290,13 @@ Copyright (c) 2017 Ken Wheeler
 Licensed under the MIT license.
 
 Free as in Bacon.
+
+-------
+
+### TODOs
+- [] replace uses of `data` objects in event listeners (i.e. `.on('click.slick', { message: 'previous' }, _.someCallback)`)
+- [] replace uses of `.animate()`
+
+
+#### jQuery Replacements
+[animate](https://github.com/fabiospampinato/cash/issues/119#issuecomment-691478512)
