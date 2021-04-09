@@ -17,12 +17,10 @@
 /* global window, document, define, jQuery, setInterval, clearInterval */
 ;(function(factory) {
     'use strict';
-    if (typeof define === 'function' && define.amd) {
-        define(['jquery'], factory);
-    } else if (typeof exports !== 'undefined') {
-        module.exports = factory(require('jquery'));
-    } else {
-        factory(jQuery);
+    try {
+        factory(Evergage.cashDom || jQuery);
+    } catch (e) {
+        console.error(e);
     }
 
 }(function($) {
@@ -160,16 +158,29 @@
                 _.visibilityChange = 'webkitvisibilitychange';
             }
 
-            _.autoPlay = $.proxy(_.autoPlay, _);
-            _.autoPlayClear = $.proxy(_.autoPlayClear, _);
-            _.autoPlayIterator = $.proxy(_.autoPlayIterator, _);
-            _.changeSlide = $.proxy(_.changeSlide, _);
-            _.clickHandler = $.proxy(_.clickHandler, _);
-            _.selectHandler = $.proxy(_.selectHandler, _);
-            _.setPosition = $.proxy(_.setPosition, _);
-            _.swipeHandler = $.proxy(_.swipeHandler, _);
-            _.dragHandler = $.proxy(_.dragHandler, _);
-            _.keyHandler = $.proxy(_.keyHandler, _);
+            // replace: proxy() - use Function.prototype.bind? https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind
+            // _.autoPlay = $.proxy(_.autoPlay, _);
+            // _.autoPlayClear = $.proxy(_.autoPlayClear, _);
+            // _.autoPlayIterator = $.proxy(_.autoPlayIterator, _);
+            // _.changeSlide = $.proxy(_.changeSlide, _);
+            // _.clickHandler = $.proxy(_.clickHandler, _);
+            // _.selectHandler = $.proxy(_.selectHandler, _);
+            // _.setPosition = $.proxy(_.setPosition, _);
+            // _.swipeHandler = $.proxy(_.swipeHandler, _);
+            // _.dragHandler = $.proxy(_.dragHandler, _);
+            // _.keyHandler = $.proxy(_.keyHandler, _);
+
+
+            _.autoPlay = _.autoPlay.bind(_);
+            _.autoPlayClear = _.autoPlayClear.bind(_);
+            _.autoPlayIterator = _.autoPlayIterator.bind(_);
+            _.changeSlide = _.changeSlide.bind(_);
+            _.clickHandler = _.clickHandler.bind(_);
+            _.selectHandler = _.selectHandler.bind(_);
+            _.setPosition = _.setPosition.bind(_);
+            _.swipeHandler = _.swipeHandler.bind(_);
+            // _.dragHandler = _.dragHandler.bind(_);
+            _.keyHandler = _.keyHandler.bind(_);
 
             _.instanceUid = instanceUid++;
 
@@ -248,7 +259,7 @@
         var _ = this;
         if (_.options.slidesToShow === 1 && _.options.adaptiveHeight === true && _.options.vertical === false) {
             var targetHeight = _.$slides.eq(_.currentSlide).outerHeight(true);
-            _.$list.animate({
+            _.$list.animate({ // replace `.animate()`
                 height: targetHeight
             }, _.options.speed);
         }
@@ -266,11 +277,11 @@
         }
         if (_.transformsEnabled === false) {
             if (_.options.vertical === false) {
-                _.$slideTrack.animate({
+                _.$slideTrack.animate({ // replace `.animate()`
                     left: targetLeft
                 }, _.options.speed, _.options.easing, callback);
             } else {
-                _.$slideTrack.animate({
+                _.$slideTrack.animate({ // replace `.animate()`
                     top: targetLeft
                 }, _.options.speed, _.options.easing, callback);
             }
@@ -283,7 +294,7 @@
                 }
                 $({
                     animStart: _.currentLeft
-                }).animate({
+                }).animate({ // replace `.animate()`
                     animStart: targetLeft
                 }, {
                     duration: _.options.speed,
@@ -759,8 +770,8 @@
 
             $('li', _.$dots)
                 .off('click.slick', _.changeSlide)
-                .off('mouseenter.slick', $.proxy(_.interrupt, _, true))
-                .off('mouseleave.slick', $.proxy(_.interrupt, _, false));
+                .off('mouseenter.slick', _.interrupt.bind(_, true)) // remove `.proxy()`
+                .off('mouseleave.slick', _.interrupt.bind(_, false)); // remove `.proxy()`
 
             if (_.options.accessibility === true) {
                 _.$dots.off('keydown.slick', _.keyHandler);
@@ -802,7 +813,8 @@
 
         $(window).off('resize.slick.slick-' + _.instanceUid, _.resize);
 
-        $('[draggable!=true]', _.$slideTrack).off('dragstart', _.preventDefault);
+        // $('[draggable!=true]', _.$slideTrack).off('dragstart', _.preventDefault);
+        $('[draggable="false"]', _.$slideTrack).off('dragstart', _.preventDefault);
 
         $(window).off('load.slick.slick-' + _.instanceUid, _.setPosition);
 
@@ -812,8 +824,8 @@
 
         var _ = this;
 
-        _.$list.off('mouseenter.slick', $.proxy(_.interrupt, _, true));
-        _.$list.off('mouseleave.slick', $.proxy(_.interrupt, _, false));
+        _.$list.off('mouseenter.slick', _.interrupt.bind(_, true)); // remove `.proxy()`
+        _.$list.off('mouseleave.slick', _.interrupt.bind(_, false)); // remove `.proxy()`
 
     };
 
@@ -940,7 +952,7 @@
                 zIndex: _.options.zIndex
             });
 
-            _.$slides.eq(slideIndex).animate({
+            _.$slides.eq(slideIndex).animate({ // replace `.animate()`
                 opacity: 1
             }, _.options.speed, _.options.easing, callback);
 
@@ -972,7 +984,7 @@
 
         if (_.cssTransitions === false) {
 
-            _.$slides.eq(slideIndex).animate({
+            _.$slides.eq(slideIndex).animate({ // replace `.animate()`
                 opacity: 0,
                 zIndex: _.options.zIndex - 2
             }, _.options.speed, _.options.easing);
@@ -1019,7 +1031,7 @@
             .off('focus.slick blur.slick')
             .on(
                 'focus.slick',
-                '*', 
+                '*',
                 function(event) {
                     var $sf = $(this);
 
@@ -1027,6 +1039,7 @@
                         if( _.options.pauseOnFocus ) {
                             if ($sf.is(':focus')) {
                                 _.focussed = true;
+                                // _.autoPlay.bind(this)
                                 _.autoPlay();
                             }
                         }
@@ -1034,7 +1047,7 @@
                 }
             ).on(
                 'blur.slick',
-                '*', 
+                '*',
                 function(event) {
                     var $sf = $(this);
 
@@ -1290,7 +1303,6 @@
         var _ = this;
 
         if (!$(_.$slider).hasClass('slick-initialized')) {
-
             $(_.$slider).addClass('slick-initialized');
 
             _.buildRows();
@@ -1376,7 +1388,8 @@
             }).eq(_.currentSlide).find('button').attr({
                 'aria-selected': 'true',
                 'tabindex': '0'
-            }).end();
+            });
+            // }).end();
         }
 
         for (var i=_.currentSlide, max=i+_.options.slidesToShow; i < max; i++) {
@@ -1432,8 +1445,8 @@
         if (_.options.dots === true && _.options.pauseOnDotsHover === true && _.slideCount > _.options.slidesToShow) {
 
             $('li', _.$dots)
-                .on('mouseenter.slick', $.proxy(_.interrupt, _, true))
-                .on('mouseleave.slick', $.proxy(_.interrupt, _, false));
+                .on('mouseenter.slick', _.interrupt.bind(_, true)) // remove `.proxy()`
+                .on('mouseleave.slick', _.interrupt.bind(_, false)); // remove `.proxy()`
 
         }
 
@@ -1445,8 +1458,8 @@
 
         if ( _.options.pauseOnHover ) {
 
-            _.$list.on('mouseenter.slick', $.proxy(_.interrupt, _, true));
-            _.$list.on('mouseleave.slick', $.proxy(_.interrupt, _, false));
+            _.$list.on('mouseenter.slick', _.interrupt.bind(_, true)); // remove `.proxy()`
+            _.$list.on('mouseleave.slick', _.interrupt.bind(_, false)); // remove `.proxy()`
 
         }
 
@@ -1476,7 +1489,7 @@
 
         _.$list.on('click.slick', _.clickHandler);
 
-        $(document).on(_.visibilityChange, $.proxy(_.visibility, _));
+        $(document).on(_.visibilityChange, _.visibility.bind(_)); // remove `.proxy()`
 
         if (_.options.accessibility === true) {
             _.$list.on('keydown.slick', _.keyHandler);
@@ -1486,11 +1499,12 @@
             $(_.$slideTrack).children().on('click.slick', _.selectHandler);
         }
 
-        $(window).on('orientationchange.slick.slick-' + _.instanceUid, $.proxy(_.orientationChange, _));
+        $(window).on('orientationchange.slick.slick-' + _.instanceUid, _.orientationChange.bind(_)); // remove `.proxy()`
 
-        $(window).on('resize.slick.slick-' + _.instanceUid, $.proxy(_.resize, _));
+        $(window).on('resize.slick.slick-' + _.instanceUid, _.resize.bind(_)); // remove `.proxy()`
 
-        $('[draggable!=true]', _.$slideTrack).on('dragstart', _.preventDefault);
+        // $('[draggable!=true]', _.$slideTrack).on('dragstart', _.preventDefault);
+        $('[draggable="false"]', _.$slideTrack).on('dragstart', _.preventDefault);
 
         $(window).on('load.slick.slick-' + _.instanceUid, _.setPosition);
         $(_.setPosition);
@@ -1556,7 +1570,7 @@
                 imageToLoad.onload = function() {
 
                     image
-                        .animate({ opacity: 0 }, 100, function() {
+                        .animate({ opacity: 0 }, 100, function() { // replace `.animate()`
 
                             if (imageSrcSet) {
                                 image
@@ -1570,7 +1584,7 @@
 
                             image
                                 .attr('src', imageSource)
-                                .animate({ opacity: 1 }, 200, function() {
+                                .animate({ opacity: 1 }, 200, function() { // replace `.animate()`
                                     image
                                         .removeAttr('data-lazy data-srcset data-sizes')
                                         .removeClass('slick-loading');
@@ -1887,7 +1901,7 @@
         var _ = this, breakpoint, currentBreakpoint, l,
             responsiveSettings = _.options.responsive || null;
 
-        if ( $.type(responsiveSettings) === 'array' && responsiveSettings.length ) {
+        if ( Array.isArray(responsiveSettings) && responsiveSettings.length ) { // replace: $.type(): maybe this? `Array.isArray(responsiveSettings)`
 
             _.respondTo = _.options.respondTo || 'window';
 
@@ -2011,7 +2025,7 @@
 
         _.$slides = _.$slideTrack.children(this.options.slide);
 
-        _.$slideTrack.children(this.options.slide).detach();
+        _.$slideTrack.children(this.options.slide).remove(); // replace: detach(): https://api.jquery.com/detach/
 
         _.$slideTrack.append(_.$slides);
 
@@ -2151,19 +2165,19 @@
 
         var _ = this, l, item, option, value, refresh = false, type;
 
-        if( $.type( arguments[0] ) === 'object' ) {
+        if( typeof arguments[0] === 'object' ) { // replace: $.type()
 
             option =  arguments[0];
             refresh = arguments[1];
             type = 'multiple';
 
-        } else if ( $.type( arguments[0] ) === 'string' ) {
+        } else if ( typeof arguments[0] === 'string' ) { // replace: $.type()
 
             option =  arguments[0];
             value = arguments[1];
             refresh = arguments[2];
 
-            if ( arguments[0] === 'responsive' && $.type( arguments[1] ) === 'array' ) {
+            if ( arguments[0] === 'responsive' && Array.isArray( arguments[1] ) ) { // replace: $.type()
 
                 type = 'responsive';
 
@@ -2193,7 +2207,7 @@
 
             for ( item in value ) {
 
-                if( $.type( _.options.responsive ) !== 'array' ) {
+                if( !Array.isArray( _.options.responsive ) ) { // replace: $.type()
 
                     _.options.responsive = [ value[item] ];
 
@@ -2899,10 +2913,12 @@
 
             _.unload();
 
-            _.$slideTrack.children(this.options.slide).detach();
+            var detached = _.$slideTrack.children(this.options.slide)
+            _.$slideTrack.children(this.options.slide).remove(); // replace: detach()
 
             _.$slidesCache.appendTo(_.$slideTrack);
 
+            console.log(detached);
             _.reinit();
 
         }
@@ -2985,8 +3001,8 @@
 
             _.$dots
                 .find('li')
-                    .removeClass('slick-active')
-                    .end();
+                    .removeClass('slick-active');
+                    // .end();
 
             _.$dots
                 .find('li')
