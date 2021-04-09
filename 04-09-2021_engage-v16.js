@@ -7584,25 +7584,25 @@ try {
 
 
 try {
-        var evgr = Evergage.resolvers;
-        Evergage
-            .init()
-            .then(() => {
-                const config = {
-                    global: {},
-                    pageTypeDefault: {
-                        name: "Slick Test"
-                    },
-                    pageTypes: [
-                        {
-                            name: "Test Page",
-                            isMatch: () => Evergage.cashDom('body').length > 0
-                        }
-                    ]
-                }
+    var evgr = Evergage.resolvers;
+    Evergage
+        .init()
+        .then(() => {
+            const config = {
+                global: {},
+                pageTypeDefault: {
+                    name: "Slick Test"
+                },
+                pageTypes: [
+                    {
+                        name: "Test Page",
+                        isMatch: () => Evergage.cashDom('body').length > 0
+                    }
+                ]
+            }
 
-                Evergage.initSitemap(config);
-            });
+            Evergage.initSitemap(config);
+        });
 } catch (e) {
     if (typeof window.Evergage === "object" && typeof window.Evergage.getVersion === "function" && window.Evergage.getVersion() >= 5) {
           console.error("siteWideJavascriptError" + e);    }
