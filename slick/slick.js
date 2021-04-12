@@ -260,14 +260,21 @@
         var _ = this;
         if (_.options.slidesToShow === 1 && _.options.adaptiveHeight === true && _.options.vertical === false) {
             var targetHeight = _.$slides.eq(_.currentSlide).outerHeight(true);
-            if (typeof $.animate !== "function") {
-                console.warn('should animate');
-                return;
-            }
 
-            _.$list.animate({ // replace `.animate()`
-                height: targetHeight
-            }, _.options.speed);
+            _.doAnimation(
+                _.$list,
+                { height: targetHeight },
+                { duration: _.options.speed}
+            );
+
+            // if (typeof $.animate !== "function") {
+            //     console.warn('should animate');
+            //     return;
+            // }
+
+            // _.$list.animate({ // replace `.animate()`
+            //     height: targetHeight
+            // }, _.options.speed);
         }
     };
 
@@ -282,23 +289,92 @@
             targetLeft = -targetLeft;
         }
         if (_.transformsEnabled === false) {
-            if (typeof $.animate !== "function") {
-                console.warn('should animate');
-                return;
-            }
             if (_.options.vertical === false) {
-                _.$slideTrack.animate({ // replace `.animate()`
-                    left: targetLeft
-                }, _.options.speed, _.options.easing, callback);
+                _.doAnimation(
+                    _.$slideTrack,
+                    { left: targetLeft },
+                    { duration: _.options.speed, easing: _.options.easing },
+                    callback
+                )
             } else {
-                _.$slideTrack.animate({ // replace `.animate()`
-                    top: targetLeft
-                }, _.options.speed, _.options.easing, callback);
+                _.doAnimation(
+                    _.$slideTrack,
+                    { top: targetLeft },
+                    { duration: _.options.speed, easing: _.options.easing },
+                    callback
+                )
             }
+        } else {
+            _.applyTransition();
+            targetLeft = Math.ceil(targetLeft);
+
+            if (_.options.vertical === false) {
+                animProps[_.animType] = 'translate3d(' + targetLeft + 'px, 0px, 0px)';
+            } else {
+                animProps[_.animType] = 'translate3d(0px,' + targetLeft + 'px, 0px)';
+            }
+            _.$slideTrack.css(animProps);
+
+            if (callback) {
+                setTimeout(function() {
+
+                    _.disableTransition();
+
+                    callback.call();
+                }, _.options.speed);
+            }
+        }
+
+
+    }
+
+    Slick.prototype.animateSlide = function(targetLeft, callback) {
+
+        var animProps = {},
+            _ = this;
+
+        _.animateHeight();
+
+        if (_.options.rtl === true && _.options.vertical === false) {
+            targetLeft = -targetLeft;
+        }
+        if (_.transformsEnabled === false) {
+            if (_.options.vertical === false) {
+                _.doAnimation(
+                    _.$slideTrack,
+                    { left: targetLeft },
+                    { duration: _.options.speed, easing: _.options.easing },
+                    callback
+                )
+            } else {
+                _.doAnimation(
+                    _.$slideTrack,
+                    { top: targetLeft },
+                    { duration: _.options.speed, easing: _.options.easing },
+                    callback
+                )
+            }
+
+
+            // if (typeof $.animate !== "function") {
+            //     console.warn('should animate');
+            //     return;
+            // }
+            // if (_.options.vertical === false) {
+            //     _.$slideTrack.animate({ // replace `.animate()`
+            //         left: targetLeft
+            //     }, _.options.speed, _.options.easing, callback);
+            // } else {
+            //     _.$slideTrack.animate({ // replace `.animate()`
+            //         top: targetLeft
+            //     }, _.options.speed, _.options.easing, callback);
+            // }
 
         } else {
 
             if (_.cssTransitions === false) {
+                // WIPanim
+
                 if (typeof $.animate !== "function") {
                     console.warn('should animate');
                     return;
@@ -708,15 +784,15 @@
 
     Slick.prototype.changeSlide = function(event, dontAnimate) {
 
-        var _ = this,
-            $target = $(event.currentTarget),
-            indexOffset, slideOffset, unevenOffset;
-
         if (!(event instanceof Event)) {
             var eventData = event;
             event = arguments[1];
             event.data = eventData;
         }
+
+        var _ = this,
+            $target = $(event.currentTarget),
+            indexOffset, slideOffset, unevenOffset;
 
         // If target is a link, prevent default action.
         if($target.is('a')) {
@@ -962,6 +1038,42 @@
 
     };
 
+    Slick.prototype.doAnimation = function(elCol, keyframes, opts, callback) {
+        var _ = this;
+
+        if (typeof opts === "function") {
+            callback = opts;
+        } else if (typeof opts !== "object") {
+            opts = {
+                duration: _.options.speed,
+                easing: _.options.easing
+            };
+        } else {
+            if (typeof opts.duration !== "number") opts.duration = _.options.speed;
+            if (typeof opts.easing !== "string") opts.easing = _.options.easting;
+        }
+
+        if (elCol.length > 1) {
+            Evergage.cashDom.each(elCol, function(i) {
+                $(this)[0].animate(keyframes, opts);
+            })
+
+        } else {
+            elCol[0].animate(keyframes, opts);
+            elCol.on('webkitAnimationEnd oAnimationEnd msAnimationEnd animationend', function(event) {
+                console.log(event);
+                // if (event.animationName === 'easeOutPane' && isvhPane.attr('view-state') === 'closed') {
+                //     $('.isvh-history-items-list').empty();
+                // }
+            });
+        }
+        if (typeof callback === "function") {
+            setTimeout(function() {
+                callback();
+            }, opts.duration);
+        }
+    }
+
     Slick.prototype.fadeSlide = function(slideIndex, callback) {
 
         var _ = this;
@@ -971,15 +1083,22 @@
             _.$slides.eq(slideIndex).css({
                 zIndex: _.options.zIndex
             });
+            // name: "fadeSlideIn",
+            _.doAnimation(
+                _.$slides.eq(slideIndex),
+                { opacity: 1 },
+                { duration: _.options.speed, easing: _.options.easing },
+                callback
+            );
 
-            if (typeof $.animate !== "function") {
-                console.warn('should animate');
-                return;
-            }
+            // if (typeof $.animate !== "function") {
+            //     console.warn('should animate');
+            //     return;
+            // }
 
-            _.$slides.eq(slideIndex).animate({ // replace `.animate()`
-                opacity: 1
-            }, _.options.speed, _.options.easing, callback);
+            // _.$slides.eq(slideIndex).animate({ // replace `.animate()`
+            //     opacity: 1
+            // }, _.options.speed, _.options.easing, callback);
 
         } else {
 
@@ -1008,15 +1127,23 @@
         var _ = this;
 
         if (_.cssTransitions === false) {
-            if (typeof $.animate !== "function") {
-                console.warn('should animate');
-                return;
-            }
 
-            _.$slides.eq(slideIndex).animate({ // replace `.animate()`
-                opacity: 0,
-                zIndex: _.options.zIndex - 2
-            }, _.options.speed, _.options.easing);
+            // name: "fadeSlideOut",
+            _.doAnimation(
+                _.$slides.eq(slideIndex),
+                { opacity: 0, zIndex: _.options.zIndex - 2 },
+                { duration: _.options.speed, easing: _.options.easing }
+            );
+
+            // if (typeof $.animate !== "function") {
+            //     console.warn('should animate');
+            //     return;
+            // }
+
+            // _.$slides.eq(slideIndex).animate({ // replace `.animate()`
+            //     opacity: 0,
+            //     zIndex: _.options.zIndex - 2
+            // }, _.options.speed, _.options.easing);
 
         } else {
 
@@ -1065,7 +1192,6 @@
                     var $sf = $(this);
 
                     setTimeout(function() {
-                        debugger;
                         if ( _.options.pauseOnFocus ) {
                             if ($sf.is(':focus')) {
                                 _.focussed = true;
@@ -1593,13 +1719,12 @@
                     imageToLoad = document.createElement('img');
 
                 imageToLoad.onload = function() {
-                    if (typeof $.animate !== "function") {
-                        console.warn('should animate');
-                        return;
-                    }
-
-                    image
-                        .animate({ opacity: 0 }, 100, function() { // replace `.animate()`
+                    // replace `.animate()`
+                    _.doAnimation(
+                        image,
+                        { opacity: 0 },
+                        { duration: 100 },
+                        function() {
 
                             if (imageSrcSet) {
                                 image
@@ -1611,16 +1736,49 @@
                                 }
                             }
 
-                            image
-                                .attr('src', imageSource)
-                                .animate({ opacity: 1 }, 200, function() { // replace `.animate()`
+                            image.attr('src', imageSource)
+                            // replace `.animate()`
+                            _.doAnimation(
+                                image,
+                                { opacity: 0 },
+                                { duration: 100 },
+                                function() {
                                     image
                                         .removeAttr('data-lazy data-srcset data-sizes')
                                         .removeClass('slick-loading');
-                                });
+                                }
+                            )
                             _.$slider.trigger('lazyLoaded', [_, image, imageSource]);
-                        });
+                        }
+                    );
 
+                    // if (typeof $.animate !== "function") {
+                    //     console.warn('should animate');
+                    //     return;
+                    // }
+
+                    // image
+                    //     .animate({ opacity: 0 }, 100, function() { // replace `.animate()`
+
+                    //         if (imageSrcSet) {
+                    //             image
+                    //                 .attr('srcset', imageSrcSet );
+
+                    //             if (imageSizes) {
+                    //                 image
+                    //                     .attr('sizes', imageSizes );
+                    //             }
+                    //         }
+
+                    //         image
+                    //             .attr('src', imageSource)
+                    //             .animate({ opacity: 1 }, 200, function() { // replace `.animate()`
+                    //                 image
+                    //                     .removeAttr('data-lazy data-srcset data-sizes')
+                    //                     .removeClass('slick-loading');
+                    //             });
+                    //         _.$slider.trigger('lazyLoaded', [_, image, imageSource]);
+                    //     });
                 };
 
                 imageToLoad.onerror = function() {
@@ -2796,12 +2954,13 @@
 
     Slick.prototype.swipeHandler = function(event) {
 
-        var _ = this;
         if (!(event instanceof Event)) {
             var eventData = event;
             event = arguments[1];
             event.data = eventData;
         }
+
+        var _ = this;
 
         if ((_.options.swipe === false) || ('ontouchend' in document && _.options.swipe === false)) {
             return;
