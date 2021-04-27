@@ -18,8 +18,7 @@
 ;(function(factory) {
     'use strict';
     try {
-        var cashDom = (window.Evergage || {}).cashDom
-        factory(cashDom || jQuery);
+        factory(cash || jQuery);
     } catch (e) {
         console.error(e);
     }
