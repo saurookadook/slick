@@ -598,12 +598,13 @@
         console.log('before checking arguments');
         console.log(event);
         console.log(arguments);
-        if (!(event instanceof Event)) {
+        if (event.data) {
+            eventData = event.data;
+        } else if (!(event instanceof Event)) {
             var eventData = event;
             event = arguments[1];
             event.data = eventData;
         }
-
 
         // if (event.data) {
         //     eventData = event.data;
