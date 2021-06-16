@@ -14,12 +14,12 @@
   Issues: http://github.com/kenwheeler/slick/issues
 
  */
-/* global window, document, define, jQuery, setInterval, clearInterval */
+/* global window, document, define, cash, jQuery, setInterval, clearInterval */
 ;(function(factory) {
     'use strict';
     try {
         var cashDom = (window.Evergage || {}).cashDom
-        factory(cashDom || cash || jQuery);
+        factory((cashDom || window.cash) || jQuery);
     } catch (e) {
         console.error(e);
     }
@@ -595,13 +595,24 @@
     Slick.prototype.changeSlide = function(event, dontAnimate) {
         var eventData;
 
-        if (event.data) {
-            eventData = event.data;
-        } else if (!(event instanceof Event)) {
-            eventData = event;
+        console.log('before checking arguments');
+        console.log(event);
+        console.log(arguments);
+        if (!(event instanceof Event)) {
+            var eventData = event;
             event = arguments[1];
-            if (event.data) Object.assign(eventData, event.data);
+            event.data = eventData;
         }
+
+
+        // if (event.data) {
+        //     eventData = event.data;
+        // } else if (!(event instanceof Event)) {
+        //     eventData = event;
+        //     event = arguments[1];
+        //     if (event.data) Object.assign(eventData, event.data);
+        // }
+        console.log('after checking arguments');
 
         var _ = this,
             $target = $(event.currentTarget),
@@ -842,7 +853,6 @@
         } else {
             elCol[0].animate(keyframes, opts);
             elCol.on('webkitAnimationEnd oAnimationEnd msAnimationEnd animationend', function(event) {
-                console.log(event);
                 // if (event.animationName === 'easeOutPane' && isvhPane.attr('view-state') === 'closed') {
                 //     $('.isvh-history-items-list').empty();
                 // }
@@ -1575,7 +1585,7 @@
 
     Slick.prototype.prev = Slick.prototype.slickPrev = function() {
         var _ = this;
-        console.log(_);
+
         _.changeSlide({
             data: {
                 message: 'previous'
@@ -1866,11 +1876,6 @@
 
         _.listWidth = _.$list.width();
         _.listHeight = _.$list.height();
-        // if (_.$list.parent().hasClass('regular')) console.log('REGULAR');
-        console.log('_.$list', _.$list);
-        console.log('_.listWidth', _.listWidth);
-        console.log('_.listHeight', _.listHeight);
-
 
         if (_.options.vertical === false && _.options.variableWidth === false) {
             _.slideWidth = Math.ceil(_.listWidth / _.options.slidesToShow);
